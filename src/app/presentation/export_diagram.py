@@ -42,3 +42,12 @@ def load_sx3_candidates_json(path: Path | None) -> list[dict[str, Any]] | None:
     if isinstance(data, list):
         return data
     return None
+
+
+def load_process_flow_json(path: Path) -> dict[str, Any]:
+    """Carrega `process_flow.json` (payload serializado pelo pipeline)."""
+    with path.open(encoding="utf-8") as f:
+        data = json.load(f)
+    if not isinstance(data, dict):
+        raise ValueError("process_flow.json deve ser um objeto JSON.")
+    return data
