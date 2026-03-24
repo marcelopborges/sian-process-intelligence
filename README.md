@@ -2,6 +2,8 @@
 
 Plataforma de **Process Intelligence** voltada a processos organizacionais, iniciando por **Contas a Pagar** no ecossistema TOTVS Protheus. Repositório estruturado como laboratório técnico com visão de produto reutilizável.
 
+**Núcleo do código Python:** `src/app/` (pacote `app`). Resumo verificável: **[ARCHITECTURE.md](ARCHITECTURE.md)** e **[src/app/README.md](src/app/README.md)**.
+
 ---
 
 ## Visão do projeto

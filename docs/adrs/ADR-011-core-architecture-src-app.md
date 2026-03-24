@@ -60,3 +60,11 @@ Classificação usada na migração (por responsabilidade, não só por nome de 
 - Nenhum import `python.*` no código versionado.
 - Uma única árvore fonte em `src/app/`.
 - Documentação (README + este ADR) deixa explícito o núcleo e o pipeline.
+
+## Adequação estrutural executada (código, não só narrativa)
+
+- **`[project.scripts]`** em `pyproject.toml`: `sian-pipeline`, `sian-infer-relationships`, `sian-build-flow` → módulos em `app.*` (instalação: `pip install -e .`).
+- **Lógica de negócio** de inferência de relacionamentos em **`app.discovery.relationship_runner`**; `scripts/infer_relationships_from_sx3.py` só faz bootstrap e chama `main`.
+- **Lógica** de geração de fluxo a partir de `event_log_candidates.json` em **`app.process.flow_from_event_log`**; `scripts/build_process_flow.py` só faz bootstrap e chama `main`.
+- **Raiz do repositório** para leitura humana: **`ARCHITECTURE.md`**, **`src/app/README.md`**.
+- Scripts longos de PM4Py passam a obter **`REPO_ROOT` via `app.paths.repo_root()`** (alinhado ao pacote `app`).

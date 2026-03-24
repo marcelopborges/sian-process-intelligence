@@ -1,6 +1,10 @@
 # sian-process-intelligence — dependências Python
 # Uso: pip install -r requirements.txt
 # Alternativa: uv pip install -r requirements.txt
+#
+# Pacote aplicacional (import app.*): na raiz do repositório execute também:
+#   pip install -e .
+# Ver ARCHITECTURE.md e pyproject.toml (núcleo em src/app).
 
 pandas>=2.0
 packaging>=21.0

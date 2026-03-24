@@ -2,6 +2,16 @@
 
 Executar a partir da **raiz do repositório** (`python scripts/...`). O código-fonte principal está em **`src/app/`** (importável como `app.*` após `pip install -e .` ou com `PYTHONPATH=src`).
 
+### Comandos de consola (após `pip install -e .`)
+
+Definidos em `pyproject.toml` → `[project.scripts]`; implementação só em `src/app/`.
+
+| Comando | Módulo |
+|---------|--------|
+| `sian-pipeline` | `app.pipeline.runner` |
+| `sian-infer-relationships` | `app.discovery.relationship_runner` |
+| `sian-build-flow` | `app.process.flow_from_event_log` |
+
 ## Pipeline único
 
 | Script | Descrição |

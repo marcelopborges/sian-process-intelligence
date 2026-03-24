@@ -25,6 +25,12 @@ dependencies = [
     "ruff>=0.1",
 ]
 
+[project.scripts]
+# Console scripts após `pip install -e .` — núcleo em src/app
+sian-pipeline = "app.pipeline.runner:main"
+sian-infer-relationships = "app.discovery.relationship_runner:main"
+sian-build-flow = "app.process.flow_from_event_log:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest-cov",

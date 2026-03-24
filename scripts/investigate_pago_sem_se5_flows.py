@@ -21,6 +21,9 @@ from _bootstrap import ensure_src_on_path  # noqa: E402
 ensure_src_on_path()
 
 from app.lab import config  # noqa: E402
+from app.paths import repo_root  # noqa: E402
+
+REPO_ROOT = repo_root()
 
 
 def _path(p: Path) -> str:
