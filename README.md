@@ -131,14 +131,69 @@ Estratégia em fases em [docs/ai-integration.md](docs/ai-integration.md) e [docs
 
 ---
 
+## Arquitetura
+
+### Núcleo único (Python)
+
+A lógica principal do projeto está em **`src/`**, pacote **`app`** (`import app.discovery`, `app.model`, …). O `pyproject.toml` declara o pacote a partir de `src/` apenas (`tool.setuptools.packages.find`: `where = ["src"]`, `include = ["app*"]`).
+
+**Não há pasta `python/` na raiz** — foi descontinuada após migração para `src/app/`. A decisão e o mapeamento legado estão em [ADR-011](docs/adrs/ADR-011-core-architecture-src-app.md).
+
+### Pipeline (governança semântica SX3)
+
+Fluxo explícito implementado pela orquestração em `app.pipeline` e módulos de cada camada:
+
+1. **Discovery** — inferência de candidatos a eventos e relacionamentos (SX3 + DuckDB `stg_*`).
+2. **Model** — event log candidato, classificação de colunas, agregação por atividade.
+3. **Process** — ordenação alinhada a regras CP, construção do fluxo (arestas, recuperação de eventos).
+4. **Validation** — alinhamento dbt/staging, relatório de sequência (`validation/validation_report.json`).
+5. **Presentation** — diagrama Mermaid e exportação JSON/Markdown.
+
+| Camada | Pacote | Papel |
+|--------|--------|--------|
+| Discovery | `app.discovery` | SX3, heurísticas, eventos e relacionamentos |
+| Model | `app.model` | Event log candidato, `classify_columns`, agregação, LLM opcional |
+| Process | `app.process` | Ordenação, `build_flow`, arestas |
+| Validation | `app.validation` | `dbt_alignment`, validação de sequências |
+| Presentation | `app.presentation` | Mermaid, exportação de diagramas |
+| Orquestração | `app.pipeline` | CLI (`--input`, `--output`, flags por etapa) |
+
+### Pacotes de suporte (não confundir com o pipeline acima)
+
+| Pacote | Papel |
+|--------|--------|
+| `app.lab` | Laboratório local: BigQuery → Parquet → DuckDB; materialização de marts locais |
+| `app.core` | Esquemas e constantes compartilhados (ex.: colunas de event log) |
+| `app.connectors` | Leitura de event log / fontes (ex.: BigQuery) |
+| `app.mining` | PM4Py: descoberta, variantes, gargalos **sobre** event log já modelado |
+| `app.simulation` | SimPy, cenários what-if |
+| `app.ai` | Texto e recomendações sobre resultados já calculados |
+| `app.config` | Domínios (`domains.yaml`), settings |
+
+### Scripts e notebooks
+
+- **`scripts/`**: entrypoints **leves** (bootstrap opcional + chamada a `app.*`). A lógica pesada fica em `src/app/`.
+- **Notebooks**: usar o mesmo pacote (`pip install -e .` ou `PYTHONPATH=src`), nunca um segundo raiz `python/`.
+
+### Comando principal do pipeline
+
+```bash
+python scripts/run_pipeline.py
+```
+
+Equivale a `--build-event-log --build-process-flow --validate`; saída padrão em `data/outputs/sx3_semantic/`. Alternativa: `pip install -e .` e `python -m app.pipeline`. Runners por etapa: `scripts/run_discovery.py`, `run_model.py`, `run_process.py`, `run_validation.py`.
+
+---
+
 ## Estrutura do repositório
 
 ```
 ├── README.md
 ├── docs/                 # Documentação (vision, architecture, domain, glossary, roadmap)
+├── docs/adrs/            # ADRs complementares (ex.: ADR-011 núcleo src/app)
 ├── adrs/                 # Architecture Decision Records
 ├── dbt/                  # Projeto dbt (models/financeiro/contas_pagar)
-├── src/app/              # Pacote Python único (pipeline por camadas; ver secção abaixo)
+├── src/app/              # Núcleo oficial do código Python (pacote app)
 ├── data/
 │   ├── raw/              # Entradas brutas (convênio de pastas)
 │   ├── staging/          # Dados intermediários locais
@@ -152,35 +207,6 @@ Estratégia em fases em [docs/ai-integration.md](docs/ai-integration.md) e [docs
 ├── requirements.txt
 └── Makefile
 ```
-
-### Arquitetura Python (pipeline)
-
-O código vive em **`src/app/`** e segue o fluxo:
-
-**DISCOVERY → MODEL → PROCESS → VALIDATION → PRESENTATION**
-
-| Camada | Pacote | Papel |
-|--------|--------|--------|
-| Discovery | `app.discovery` | SX3, heurísticas, inferência de eventos e relacionamentos |
-| Model | `app.model` | Event log candidato, classificação de colunas, agregação |
-| Process | `app.process` | Ordenação, construção do fluxo (arestas, recuperação de eventos) |
-| Validation | `app.validation` | Alinhamento dbt/staging, validação de sequências |
-| Presentation | `app.presentation` | Mermaid, exportação de diagramas |
-| Orquestração | `app.pipeline` | CLI única (`run_pipeline`) com `--input` / `--output` |
-
-Laboratório local (BigQuery → Parquet → DuckDB): `app.lab`. Utilidades: `app.paths`, `app.config`.
-
-**Comando principal (pipeline completo — event log + fluxo + relatório de validação):**
-
-```bash
-python scripts/run_pipeline.py
-```
-
-Equivale a passar `--build-event-log --build-process-flow --validate`. Sem argumentos extra, os artefatos vão para `data/outputs/sx3_semantic/` (ajuste com `-o` / `--output`).
-
-**Alternativa (pacote instalável):** `pip install -e .` e então `python -m app.pipeline` (mesmos argumentos do runner).
-
-Scripts por etapa: `scripts/run_discovery.py`, `run_model.py`, `run_process.py`, `run_validation.py` (validação offline a partir de JSONs já gerados).
 
 ---
 

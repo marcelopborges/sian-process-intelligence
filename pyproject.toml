@@ -37,6 +37,7 @@ notebooks = [
     "jupyterlab",
 ]
 
+# Núcleo único: pacote `app` em src/app (ver docs/adrs/ADR-011-core-architecture-src-app.md)
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["app*"]
