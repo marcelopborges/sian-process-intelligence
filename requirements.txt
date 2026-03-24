@@ -1,0 +1,23 @@
+# sian-process-intelligence — dependências Python
+# Uso: pip install -r requirements.txt
+# Alternativa: uv pip install -r requirements.txt
+
+pandas>=2.0
+packaging>=21.0
+pm4py>=2.7
+simpy>=4.1
+google-cloud-bigquery>=3.0
+db-dtypes>=1.0
+python-dotenv>=1.0
+pytest>=7.0
+ruff>=0.1
+
+# Laboratório local (Parquet + DuckDB)
+pyarrow>=14.0
+duckdb>=0.9.0
+pyyaml>=6.0
+
+# Opcional (dev/notebooks)
+# pytest-cov
+# jupyter
+# jupyterlab

@@ -1,0 +1,78 @@
+# Schema e testes para Contas a Pagar
+# Contrato canônico: docs/contracts/contas_a_pagar_process_intelligence.md (v1)
+
+version: 2
+
+models:
+  - name: mart_cp_case_base
+    description: Case base estático. 1 caso = 1 título SE2. case_id = 7 campos (E2_FILIAL, E2_PREFIXO, E2_NUM, E2_PARCELA, E2_TIPO, E2_FORNECE, E2_LOJA) com TRIM.
+    config:
+      materialized: table
+    columns:
+      - name: case_id
+        description: Chave composta de 7 campos (E2_FILIAL|PREFIXO|NUM|PARCELA|TIPO|FORNECE|LOJA) com TRIM.
+        tests:
+          - unique
+          - not_null
+      - name: status_macro
+        description: Status estático (ABERTO, EM_ANDAMENTO, PAGO, CANCELADO).
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['ABERTO', 'EM_ANDAMENTO', 'PAGO', 'CANCELADO']
+      - name: status_detalhado
+        description: Status original/detalhado da SE2.
+      - name: tem_se5
+        description: Indica existência de registro SE5 (evidência bancária).
+      - name: vl_pago_consolidado
+        description: Valor pago (observado SE5 ou inferido quando vl_pago_e_inferido = true).
+      - name: vl_pago_e_inferido
+        description: True quando valor consolidado foi inferido (ex.: baixa sem SE5).
+      - name: fonte_dt_pagamento
+        description: Data de pagamento (banco quando tem SE5).
+
+  - name: mart_cp_event_log
+    description: Event log para Process Mining. case_id = 7 campos com TRIM. TABLE estável. event_timestamp_adjusted para ordenação.
+    config:
+      materialized: table
+    columns:
+      - name: case_id
+        description: ID do caso (7 campos com TRIM).
+        tests:
+          - not_null
+      - name: activity
+        description: Atividade padronizada.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - TITULO_CRIADO
+                - TITULO_LIBERADO
+                - EVENTO_FINANCEIRO_GERADO
+                - LANCAMENTO_CONTABIL
+                - PAGAMENTO_REALIZADO
+                - BAIXA_SEM_SE5
+                - TITULO_CANCELADO
+      - name: event_timestamp_original
+        description: Timestamp original do evento.
+      - name: event_order
+        description: Ordem lógica para desempate (1-7).
+      - name: event_timestamp_adjusted
+        description: Timestamp com offset por event_order para ordenação estável.
+        tests:
+          - not_null
+      - name: timestamp_confiabilidade
+        description: NEGOCIO ou TECNICO (ex.: DBALTERACAO = TECNICO).
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['NEGOCIO', 'TECNICO']
+
+  - name: mart_cp_ap_operacional
+    description: VIEW operacional; pode usar CURRENT_DATE() para aging, vencidos, SLA.
+    config:
+      materialized: view
+    columns:
+      - name: case_id
+      - name: situacao_operacional
+        description: a_vencer, vencido, encerrado (baseado em current_date).

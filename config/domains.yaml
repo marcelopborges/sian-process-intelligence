@@ -1,0 +1,14 @@
+# Domínios para inferência semântica a partir do SX3 (Protheus).
+# Usado por scripts/infer_events_from_sx3.py (--domain <id>).
+
+cp:
+  label: "Contas a Pagar"
+  description: "Cadeia SE2 → FK7 → FK2 → SE5; mart_cp_event_log e intermediários int_cp_*."
+  tables:
+    - SE2
+    - FK7
+    - FK2
+    - SE5
+  # Opcional: sobrescrever/estender vínculos mart (tabela/coluna) por atividade.
+  # Formato: activity -> primary: [{table, column}, ...]
+  # mart_override: {}

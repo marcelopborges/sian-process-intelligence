@@ -1,0 +1,20 @@
+# Perfil dbt para BigQuery.
+# Em produção/CI, use variáveis de ambiente ou secretos.
+# Não commitar credenciais. Ver: https://docs.getdbt.com/dbt-cli/configure-your-profile
+
+sian_process_intelligence:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth  # ou service-account com keyfile
+      project: "{{ env_var('BQ_PROJECT_ID') }}"
+      dataset: "{{ env_var('BQ_DATASET_ANALYTICS', 'analytics_process') }}"
+      threads: 4
+      # keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS') }}"  # se usar service-account
+    prod:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('BQ_PROJECT_ID') }}"
+      dataset: "{{ env_var('BQ_DATASET_ANALYTICS') }}"
+      threads: 8
