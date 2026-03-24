@@ -1,6 +1,10 @@
 # Architecture Decision Records (ADRs)
 
-Este diretório contém as decisões arquiteturais do projeto **sian-process-intelligence**, no formato ADR (contexto, decisão, consequências, alternativas).
+Este diretório registra **direções de trabalho e hipóteses** do projeto **sian-process-intelligence**, no formato ADR (contexto, decisão, consequências, alternativas).
+
+## Vigência e status
+
+O repositório está em **fase de estudo e laboratório**. Os ADRs descrevem o raciocínio atual e o desenho pretendido; **não constituem política corporativa nem compromisso de produção** até serem formalmente adotados por governança de arquitetura ou produto. Podem ser revisados ou substituídos à medida que o estudo avança.
 
 ## Índice
 
@@ -20,4 +24,4 @@ Este diretório contém as decisões arquiteturais do projeto **sian-process-int
 ## Convenção
 
 - Nome do arquivo: `NNN-kebab-case-titulo.md`
-- Estrutura: Contexto, Decisão, Consequências, Alternativas consideradas, Status.
+- Estrutura sugerida: Contexto, Decisão (direção de trabalho), Consequências, Alternativas consideradas, Status e vigência.

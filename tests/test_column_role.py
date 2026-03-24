@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from python.validation.column_role import classify_column_role
+from app.model.classify_columns import classify_column_role
 
 
 def test_event_time_patterns():

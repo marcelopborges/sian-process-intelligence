@@ -38,13 +38,13 @@ notebooks = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["python*"]
+where = ["src"]
+include = ["app*"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-src = ["python", "tests"]
+src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
@@ -52,12 +52,12 @@ ignore = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = ["src"]
 addopts = "-v --tb=short"
 filterwarnings = ["ignore::DeprecationWarning"]
 
 [tool.coverage.run]
-source = ["python"]
+source = ["src/app"]
 omit = ["*/tests/*", "*/__init__.py"]
 
 [tool.coverage.report]

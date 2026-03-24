@@ -36,10 +36,10 @@ BigQuery (fonte)  →  Parquet (data/extracts/)  →  DuckDB (local/)  →  mart
 
 3. **Passo a passo**
    ```bash
-   python -m python.local_lab.extract_bigquery_to_parquet
-   python -m python.local_lab.load_parquet_to_duckdb
-   python -m python.local_lab.materialize_cp_case_base
-   python -m python.local_lab.materialize_cp_event_log
+   python -m app.lab.extract_bigquery_to_parquet
+   python -m app.lab.load_parquet_to_duckdb
+   python -m app.lab.materialize_cp_case_base
+   python -m app.lab.materialize_cp_event_log
    ```
 
 4. **Consultar o DuckDB**
@@ -63,7 +63,7 @@ BigQuery (fonte)  →  Parquet (data/extracts/)  →  DuckDB (local/)  →  mart
 | `local/process_intelligence.duckdb` | Banco DuckDB com stg_* e marts. |
 | `sql/marts/cp_case_base.sql` | SQL do case base (DuckDB). |
 | `sql/marts/cp_event_log.sql` | SQL do event log (DuckDB). |
-| `python/local_lab/*.py` | Scripts de extração, carga e materialização. |
+| `src/app/lab/*.py` | Scripts de extração, carga e materialização (`python -m app.lab.*`). |
 
 ## Por que não poluir o BigQuery
 
@@ -94,5 +94,5 @@ O contrato em `docs/contracts/contas_a_pagar_process_intelligence.md` define o *
 | **Relatório schema** | `uv run python scripts/report_parquet_schema_vs_sql.py -o docs/schema-parquet-vs-sql-report.md` | Comparar colunas dos Parquets com as usadas nos SQLs; ver divergências. |
 | **Explorar no DuckDB** | `duckdb local/process_intelligence.duckdb` | Consultar `cp_case_base`, `cp_event_log` (ex.: status_macro, atividades, duração). |
 | **Validar contrato** | `uv run python scripts/validate_contract_alignment.py` | Verificar aderência ao contrato (exige `dbt/models/` com marts; opcional para lab local). |
-| **Process mining** | Implementar em `python/mining/` (discovery, variants, bottlenecks) | Ler `data/marts/cp_event_log.parquet` com PM4Py; descoberta de processo, variantes, gargalos. |
+| **Process mining** | Implementar em `src/app/mining/` (discovery, variants, bottlenecks) | Ler `data/marts/cp_event_log.parquet` com PM4Py; descoberta de processo, variantes, gargalos. |
 | **Subir para dbt/BigQuery** | Replicar lógica de `sql/marts/*.sql` em modelos dbt | Quando a lógica estiver validada no lab, materializar marts no dataset de analytics. |

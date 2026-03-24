@@ -15,11 +15,11 @@ install:
 	@echo "Considere: uv sync (se usar uv)"
 
 lint:
-	ruff check python tests
+	ruff check src tests
 	@echo "dbt: cd $(DBT_DIR) && dbt compile  # valida sintaxe"
 
 format:
-	ruff format python tests
+	ruff format src tests
 
 test:
 	pytest tests -v

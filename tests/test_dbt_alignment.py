@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from python.validation.dbt_alignment import classify_event_candidate, load_mart_registry
+from app.validation.dbt_alignment import classify_event_candidate, load_mart_registry
 
 
 def test_alinhado_mart_se2_emissao():

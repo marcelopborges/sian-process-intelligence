@@ -19,18 +19,18 @@ Checklist prático para começar a implementação após o bootstrap do reposit�
 
 ## 3. Python: connectors e mining
 
-- [ ] Implementar `read_event_log_from_bigquery` em `python/connectors/event_log_reader.py` (usar google-cloud-bigquery e pandas).
-- [ ] Implementar `discover_process_model` e helpers em `python/mining/discovery.py` (PM4Py).
-- [ ] Implementar `get_variants` e `variant_summary` em `python/mining/variants.py`.
-- [ ] Implementar `compute_bottlenecks` e `bottleneck_summary` em `python/mining/bottlenecks.py`.
+- [ ] Implementar `read_event_log_from_bigquery` em `src/app/connectors/event_log_reader.py` (usar google-cloud-bigquery e pandas).
+- [ ] Implementar `discover_process_model` e helpers em `src/app/mining/discovery.py` (PM4Py).
+- [ ] Implementar `get_variants` e `variant_summary` em `src/app/mining/variants.py`.
+- [ ] Implementar `compute_bottlenecks` e `bottleneck_summary` em `src/app/mining/bottlenecks.py`.
 - [ ] Criar notebook em `notebooks/` que lê o mart, roda mining e exibe variantes/gargalos.
 
 ## 4. Simulação e IA
 
-- [ ] Implementar `run_simulation` e `build_scenario_from_event_log` em `python/simulation/scenarios.py` (SimPy).
-- [ ] Implementar `complete` em `python/ai/llm_client.py` (leitura de env, chamada à API do provedor).
-- [ ] Implementar `interpret_variants` e `interpret_bottlenecks` em `python/ai/analysis.py` usando os prompts em `prompts/`.
-- [ ] Implementar `generate_recommendations` em `python/ai/recommendations.py` com guardrails.
+- [ ] Implementar `run_simulation` e `build_scenario_from_event_log` em `src/app/simulation/scenarios.py` (SimPy).
+- [ ] Implementar `complete` em `src/app/ai/llm_client.py` (leitura de env, chamada à API do provedor).
+- [ ] Implementar `interpret_variants` e `interpret_bottlenecks` em `src/app/ai/analysis.py` usando os prompts em `prompts/`.
+- [ ] Implementar `generate_recommendations` em `src/app/ai/recommendations.py` com guardrails.
 
 ## 5. Qualidade e CI
 

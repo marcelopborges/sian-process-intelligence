@@ -86,7 +86,7 @@ O projeto **não** está acoplado ao Cortex nem ao Argos neste momento; a arquit
 | Process Mining| PM4Py      |
 | Simulação     | SimPy      |
 | Linguagem     | Python 3.11+ |
-| IA            | LLMs (integração futura; abstração em `python/ai/`) |
+| IA            | LLMs (integração futura; abstração em `src/app/ai/`) |
 
 ---
 
@@ -138,16 +138,49 @@ Estratégia em fases em [docs/ai-integration.md](docs/ai-integration.md) e [docs
 ├── docs/                 # Documentação (vision, architecture, domain, glossary, roadmap)
 ├── adrs/                 # Architecture Decision Records
 ├── dbt/                  # Projeto dbt (models/financeiro/contas_pagar)
-├── python/               # Código Python (mining, simulation, sx3, validation, …)
+├── src/app/              # Pacote Python único (pipeline por camadas; ver secção abaixo)
+├── data/
+│   ├── raw/              # Entradas brutas (convênio de pastas)
+│   ├── staging/          # Dados intermediários locais
+│   └── outputs/          # Artefatos gerados (event_log, process_flow, validation, sx3_semantic)
 ├── notebooks/            # Jupyter notebooks exploratórios
 ├── config/               # Configurações (domains.yaml, dbt, env)
 ├── tests/                # Testes unitários e de integração
 ├── prompts/              # Prompts reutilizáveis para LLMs
-├── scripts/              # Scripts de apoio (setup, run, deploy)
+├── scripts/              # CLIs finas (run_pipeline, infer_*, laboratório DuckDB)
 ├── pyproject.toml
 ├── requirements.txt
 └── Makefile
 ```
+
+### Arquitetura Python (pipeline)
+
+O código vive em **`src/app/`** e segue o fluxo:
+
+**DISCOVERY → MODEL → PROCESS → VALIDATION → PRESENTATION**
+
+| Camada | Pacote | Papel |
+|--------|--------|--------|
+| Discovery | `app.discovery` | SX3, heurísticas, inferência de eventos e relacionamentos |
+| Model | `app.model` | Event log candidato, classificação de colunas, agregação |
+| Process | `app.process` | Ordenação, construção do fluxo (arestas, recuperação de eventos) |
+| Validation | `app.validation` | Alinhamento dbt/staging, validação de sequências |
+| Presentation | `app.presentation` | Mermaid, exportação de diagramas |
+| Orquestração | `app.pipeline` | CLI única (`run_pipeline`) com `--input` / `--output` |
+
+Laboratório local (BigQuery → Parquet → DuckDB): `app.lab`. Utilidades: `app.paths`, `app.config`.
+
+**Comando principal (pipeline completo — event log + fluxo + relatório de validação):**
+
+```bash
+python scripts/run_pipeline.py
+```
+
+Equivale a passar `--build-event-log --build-process-flow --validate`. Sem argumentos extra, os artefatos vão para `data/outputs/sx3_semantic/` (ajuste com `-o` / `--output`).
+
+**Alternativa (pacote instalável):** `pip install -e .` e então `python -m app.pipeline` (mesmos argumentos do runner).
+
+Scripts por etapa: `scripts/run_discovery.py`, `run_model.py`, `run_process.py`, `run_validation.py` (validação offline a partir de JSONs já gerados).
 
 ---
 
@@ -170,7 +203,7 @@ Scripts Python leem o **dicionário SX3** (export CSV do Protheus), aplicam heur
 - Python **3.11+**, ambiente virtual recomendado.
 - Dependências: `pip install -r requirements.txt` (inclui `duckdb`, `pandas`, `pyyaml`).
 - **Arquivo SX3 (CSV)** com colunas mínimas `X3_ARQUIVO`, `X3_CAMPO` (e metadados usuais). Local padrão no repositório: `data/others/SX3010_202603231122.csv` (ajuste ao seu export).
-- **DuckDB local** com tabelas `stg_se2`, `stg_fk7`, `stg_fk2`, `stg_se5` (nomes em schema `main`). Caminho padrão: `local/process_intelligence.duckdb` (definido em `python/local_lab/config.py`). Sem esse banco, o script **não roda** — é necessário carregar o staging no laboratório antes.
+- **DuckDB local** com tabelas `stg_se2`, `stg_fk7`, `stg_fk2`, `stg_se5` (nomes em schema `main`). Caminho padrão: `local/process_intelligence.duckdb` (definido em `src/app/lab/config.py`). Sem esse banco, o script **não roda** — é necessário carregar o staging no laboratório antes.
 
 ### Comandos (a partir da raiz do repositório)
 
@@ -180,7 +213,7 @@ Scripts Python leem o **dicionário SX3** (export CSV do Protheus), aplicam heur
 python scripts/infer_relationships_from_sx3.py \
   --sx3 data/others/SX3010_202603231122.csv \
   --duckdb-path local/process_intelligence.duckdb \
-  -o output/sx3_semantic
+  -o data/outputs/sx3_semantic
 ```
 
 **Candidatos de evento (recomendado para CP — menos ruído):**
@@ -192,7 +225,7 @@ python scripts/infer_events_from_sx3.py \
   --domain cp \
   --min-score 0.6 \
   --top-n-per-table 10 \
-  -o output/sx3_semantic
+  -o data/outputs/sx3_semantic
 ```
 
 Filtro explícito de tabelas (sobrescreve `--domain`):
@@ -222,10 +255,10 @@ python scripts/infer_events_from_sx3.py \
   --min-score 0.5 \
   --build-event-log \
   --top-attributes-per-event 8 \
-  -o output/sx3_semantic
+  -o data/outputs/sx3_semantic
 ```
 
-Gera `output/sx3_semantic/event_log_candidates.json` e a tabela DuckDB `event_log_candidates`.
+Gera `data/outputs/sx3_semantic/event_log_candidates.json` e a tabela DuckDB `event_log_candidates`.
 
 **Fluxo visual (Mermaid) a partir do event log candidato:**
 
@@ -236,7 +269,7 @@ python scripts/infer_events_from_sx3.py \
   --domain cp \
   --build-event-log \
   --build-process-flow \
-  -o output/sx3_semantic
+  -o data/outputs/sx3_semantic
 ```
 
 Saídas: `process_flow.json` (nós, arestas, `unreliable_events`, diagrama), `process_flow.md` (bloco Mermaid), tabela DuckDB `process_flow_snapshot`. Ordenação alinhada à macro dbt `cp_event_order`.
@@ -245,10 +278,10 @@ Saídas: `process_flow.json` (nós, arestas, `unreliable_events`, diagrama), `pr
 
 | Artefato | Descrição |
 |----------|-----------|
-| `output/sx3_semantic/sx3_event_candidates.json` | Candidatos por coluna (inclui `column_role`: EVENT_TIME, ATTRIBUTE, …). |
-| `output/sx3_semantic/event_log_candidates.json` | **Com `--build-event-log`:** 1 registro por `activity` com `event_time` + `attributes`. |
-| `output/sx3_semantic/sx3_event_candidates.md` | Visão tabular (top N). |
-| `output/sx3_semantic/sx3_relationship_suggestions.json` / `.md` | Sugestões de relacionamento. |
+| `data/outputs/sx3_semantic/sx3_event_candidates.json` | Candidatos por coluna (inclui `column_role`: EVENT_TIME, ATTRIBUTE, …). |
+| `data/outputs/sx3_semantic/event_log_candidates.json` | **Com `--build-event-log`:** 1 registro por `activity` com `event_time` + `attributes`. |
+| `data/outputs/sx3_semantic/sx3_event_candidates.md` | Visão tabular (top N). |
+| `data/outputs/sx3_semantic/sx3_relationship_suggestions.json` / `.md` | Sugestões de relacionamento. |
 | DuckDB: `sx3_event_candidates` | Candidatos por coluna (`column_role`, alinhamento dbt, LLM opcional). |
 | DuckDB: `event_log_candidates` | **Com `--build-event-log`:** evento agregado por activity. |
 | DuckDB: tabela `sx3_relationship_suggestions` | Relacionamentos inferidos. |
@@ -270,7 +303,7 @@ O arquivo `config/domains.yaml` declara o domínio `cp` (tabelas SE2, FK7, FK2, 
 ### Limitações atuais
 
 - Heurística por keywords: pode perder eventos ou gerar falsos positivos se o texto SX3 for ambíguo.
-- Alinhamento dbt usa **registro fixo** em `python/validation/dbt_alignment.py` + opcional `mart_override` no YAML — não executa `dbt parse` automaticamente (evolução futura).
+- Alinhamento dbt usa **registro fixo** em `src/app/validation/dbt_alignment.py` + opcional `mart_override` no YAML — não executa `dbt parse` automaticamente (evolução futura).
 - LLM opcional depende de rede e `OPENAI_API_KEY`; não cria regras de processo nem joins.
 
 ### Exemplo de registro no JSON (candidato enriquecido)
@@ -321,7 +354,7 @@ Detalhes técnicos adicionais: [scripts/README.md](scripts/README.md).
 Após o bootstrap, priorize:
 
 1. **Dados**: Configurar `.env`, apontar stg_* para tabelas reais no BigQuery e rodar `dbt run` / `dbt test`.
-2. **Mining**: Implementar leitura do event log e funções em `python/mining/` (PM4Py).
+2. **Mining**: Implementar leitura do event log e funções em `src/app/mining/` (PM4Py).
 3. **Validação**: Validar case base e event log com área de negócio; documentar mapeamento de atividades em `docs/glossary.md`.
 
 Detalhes em [docs/next-steps.md](docs/next-steps.md) e [docs/roadmap.md](docs/roadmap.md).

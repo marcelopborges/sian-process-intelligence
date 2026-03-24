@@ -1,28 +1,27 @@
-# ADR-002: BigQuery + dbt como fundação analítica
+# ADR-002: BigQuery + dbt como fundação analítica (hipótese de estudo)
 
-**Status**: Aceito  
-**Data**: 2025-03  
-**Contexto**: Escolha da stack de dados e transformação para Process Intelligence.
+**Status**: Provisório (estudo)  
+**Data**: 2025-03 · Atualizado: 2026-03  
+
+## Vigência
+
+Hipótese de stack para **transformação e versionamento** de modelos durante o laboratório. A organização pode operar outro lake/warehouse em produção; este ADR não fixa contrato corporativo de dados.
 
 ## Contexto
 
-Os dados do TOTVS Protheus (e de outras fontes futuras) precisam ser transformados em estruturas analíticas: case base (um registro por caso de processo) e event log (eventos por atividade). A organização já utiliza ou planeja utilizar BigQuery como data lake/lakehouse. É necessário um mecanismo de transformação versionado, testável e documentado.
+Para estudar Process Intelligence a partir do Protheus (e possíveis fontes futuras), faz sentido ter **transformações versionadas** (SQL, testes, documentação). BigQuery e dbt são candidatos naturais quando o dado analítico já vive ou pode viver no BigQuery.
 
-## Decisão
+## Decisão (direção de trabalho)
 
-Adotar **BigQuery** como armazenamento analítico e **dbt** como ferramenta de transformação para construir as tabelas de Process Intelligence. Assume-se que os dados brutos ou staging do Protheus **já estão no BigQuery**; o dbt atua a partir deles para produzir modelos intermediários (int) e marts (case_base, event_log).
-
-- **BigQuery**: fonte e destino; queries e documentação via dbt.
-- **dbt**: modelos em SQL, testes, documentação, linha de montagem clara (staging → int → mart).
+No âmbito do estudo, adotar **BigQuery** como alvo analítico de referência e **dbt** para modelos (staging → int → mart). O repositório contém projeto em `dbt/`; premissa de trabalho: dados brutos ou staging **acessíveis** ao dbt (origem exata pode variar por ambiente de laboratório).
 
 ## Consequências
 
-- **Positivas**: Transformações versionadas, testes de qualidade (unique, not null, relationships), documentação gerada, alinhamento com prática comum de analytics; escalabilidade do BigQuery.
-- **Negativas**: Equipe precisa conhecer dbt e SQL; custo de query no BigQuery deve ser monitorado.
-- **Riscos**: Dados de origem fora do BigQuery exigiriam adaptadores ou ingestão prévia; assumido que o pipeline de ingestão é responsabilidade de outro sistema.
+- **Esperadas**: Modelos reproduzíveis, testes dbt, documentação gerada no fluxo de estudo.
+- **Cuidados**: Custo de query no BQ em experimentos; necessidade de credenciais e datasets de teste — típico de laboratório, não de promessa de escala produtiva neste ADR.
 
 ## Alternativas consideradas
 
-1. **Apenas SQL/scripts no repositório**: Rejeitado por falta de testes estruturados e documentação automatizada.
-2. **Spark/Databricks**: Rejeitado para o escopo inicial; BigQuery atende e reduz variedade de tecnologias.
-3. **Ferramentas low-code (ex.: Dataform apenas como UI)**: dbt em código permite revisão, CI e portabilidade; preferido para laboratório e produto.
+1. **Apenas scripts SQL soltos**: Menos atrativa para testes e doc automatizada no estudo.
+2. **Spark/Databricks**: Pode ser reavaliada se o estudo migrar de plataforma.
+3. **Low-code sem código revisável**: Menos alinhada a PR e CI no repositório.

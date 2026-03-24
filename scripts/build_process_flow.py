@@ -4,11 +4,11 @@ Gera process_flow.json + process_flow.md a partir de event_log_candidates.json.
 
 Uso (raiz do repo):
   python scripts/build_process_flow.py \\
-    --input output/sx3_semantic/event_log_candidates.json \\
+    --input data/outputs/sx3_semantic/event_log_candidates.json \\
     --duckdb-path local/process_intelligence.duckdb \\
-    -o output/sx3_semantic
+    -o data/outputs/sx3_semantic
 
-Opcional: --sx3-candidates output/sx3_semantic/sx3_event_candidates.json (recuperação INVALID_EVENT).
+Opcional: --sx3-candidates (recuperação INVALID_EVENT).
 """
 from __future__ import annotations
 
@@ -17,18 +17,21 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+_scripts = Path(__file__).resolve().parent
+if str(_scripts) not in sys.path:
+    sys.path.insert(0, str(_scripts))
 
-from python.local_lab import config as local_lab_config
-from python.validation.process_flow import (
-    build_process_flow,
+from _bootstrap import ensure_src_on_path  # noqa: E402
+
+ensure_src_on_path()
+
+from app.lab import config as local_lab_config  # noqa: E402
+from app.presentation.export_diagram import (  # noqa: E402
     load_event_log_json,
     load_sx3_candidates_json,
-    payload_to_json_dict,
     write_process_flow_artifacts,
 )
+from app.process.build_flow import build_process_flow, payload_to_json_dict  # noqa: E402
 
 
 def _duckdb_columns(duckdb_path: Path) -> dict[str, set[str]]:
@@ -50,8 +53,8 @@ def _duckdb_columns(duckdb_path: Path) -> dict[str, set[str]]:
 def main() -> None:
     p = argparse.ArgumentParser(description="Gera fluxo de processo + Mermaid a partir do event log candidato.")
     p.add_argument("--input", type=Path, required=True, help="event_log_candidates.json")
+    p.add_argument("--output", "-o", "--output-dir", type=Path, dest="output_dir", default=Path("data/outputs/sx3_semantic"))
     p.add_argument("--duckdb-path", type=Path, default=None)
-    p.add_argument("-o", "--output-dir", type=Path, default=Path("output/sx3_semantic"))
     p.add_argument(
         "--sx3-candidates",
         type=Path,
@@ -73,7 +76,6 @@ def main() -> None:
     payload = build_process_flow(events, duckdb_columns_by_table=cols, sx3_candidate_rows=sx3)
     jpath, mpath = write_process_flow_artifacts(payload, args.output_dir)
 
-    # DuckDB opcional
     import duckdb
 
     conn = duckdb.connect(str(duckdb_path), read_only=False)

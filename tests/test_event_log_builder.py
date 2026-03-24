@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from python.validation.event_log_builder import (
+from app.model.build_event_log import (
     aggregate_dbt_alignment,
     build_event_log_records,
     compute_event_confidence,

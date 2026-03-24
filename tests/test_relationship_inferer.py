@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from python.sx3.relationship_inferer import _token_from_column, infer_relationship_suggestions
-from python.sx3.sx3_loader import Sx3FieldMeta
+from app.discovery.relationship_inferer import _token_from_column, infer_relationship_suggestions
+from app.discovery.sx3_loader import Sx3FieldMeta
 
 
 def test_token_from_column_extracts_suffix_token():

@@ -1,19 +1,18 @@
 """
-Testes para python/core/schemas.py.
+Testes para app.core.schemas.
 """
 from __future__ import annotations
 
-import pytest
-from python.core.schemas import (
-    required_columns,
-    recommended_columns,
-    CASE_ID,
+from app.core.schemas import (
+    ACTIVITIES_CP,
     ACTIVITY,
+    CASE_ID,
+    EVENT_ORDER,
     EVENT_TIMESTAMP_ADJUSTED,
     EVENT_TIMESTAMP_ORIGINAL,
-    EVENT_ORDER,
     TIMESTAMP_CONFIABILIDADE,
-    ACTIVITIES_CP,
+    recommended_columns,
+    required_columns,
 )
 
 

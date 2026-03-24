@@ -1,30 +1,32 @@
-# ADR-006: IA como camada de interpretação e recomendação, não como fonte primária de verdade
+# ADR-006: IA como camada de interpretação e recomendação (não como verdade primária)
 
-**Status**: Aceito  
-**Data**: 2025-03  
-**Contexto**: Papel da IA (LLMs e ferramentas generativas) no produto de Process Intelligence.
+**Status**: Provisório (estudo)  
+**Data**: 2025-03 · Atualizado: 2026-03  
+
+## Vigência
+
+Princípio de **uso responsável de LLMs** durante o laboratório. Não restringe pesquisa futura; fixa expectativa: dados e regras auditáveis primeiro, texto e sugestões depois.
 
 ## Contexto
 
-A IA pode auxiliar em documentação, interpretação de variantes e gargalos, sumarização executiva e geração de recomendações. Por outro lado, métricas, regras de negócio e definição de atividades devem ser determinísticas e auditáveis. Usar IA como "fonte de verdade" para dados ou regras introduz riscos de alucinação, inconsistência e dificuldade de auditoria.
+LLMs podem ajudar em documentação, sumários e explicações sobre resultados de mining. Ao mesmo tempo, métricas oficiais e definições de processo precisam ser rastreáveis em ambiente de estudo e, mais ainda, em produção futura.
 
-## Decisão
+## Decisão (direção de trabalho)
 
-Tratar **IA como camada de interpretação e recomendação** sobre artefatos já produzidos pela pipeline de dados e mining:
+Posicionar **IA como camada sobre artefatos já produzidos** (dbt, PM4Py, SimPy, relatórios):
 
-- **Onde a IA atua**: geração de texto (documentação, sumários, explicações de variantes/gargalos, recomendações em linguagem natural); sugestões de SQL ou mapeamentos (como copiloto); futuramente, agente que consulta dados e ferramentas com supervisão.
-- **Onde a IA não substitui**: definição de modelo de dados (dbt); regras de negócio para atividades e casos; métricas oficiais (tempo de ciclo, quantidade de casos); validação de qualidade dos dados.
+- **Papel típico**: linguagem natural, sugestões, copiloto; eventual agente com supervisão.
+- **Não papel**: fonte única de números ou regras de negócio não reproduzíveis.
 
-Ou seja: **dados e métricas vêm do dbt e do PM4Py/SimPy; a IA interpreta e comunica**, não inventa números nem regras. Prompts e integrações devem deixar claro o contexto (ex.: "com base nos seguintes resultados de mineração...") e, quando aplicável, incluir guardrails (não inventar métricas, citar origem).
+Implementações experimentais devem concentrar-se em **`src/app/ai/`** e em `prompts/`, com guardrails claros nos prompts (não inventar métricas; citar origem quando possível).
 
 ## Consequências
 
-- **Positivas**: Rastreabilidade e auditoria preservadas; menor risco de decisões baseadas em alucinações; evolução da IA em fases (copiloto → interpretação → recomendações → agente) sem comprometer a base analítica.
-- **Negativas**: Limitação do que a IA pode "decidir" sozinha; fluxos que exigem aprovação humana para recomendações.
-- **Riscos**: Uso indevido de saídas da IA como verdade; mitigação: documentação clara, exemplos de prompts em `prompts/` e treinamento de uso.
+- **Esperadas**: Menor risco de confundir “texto gerado” com “dado de sistema”.
+- **Cuidados**: Usuários do estudo ainda devem ser treinados a validar saídas de IA.
 
 ## Alternativas consideradas
 
-1. **IA como fonte de métricas (ex.: "quantos casos?")**: Rejeitado; métricas devem vir de queries e mining reproduzíveis.
-2. **Sem IA no escopo**: Rejeitado; há valor claro em documentação assistida e interpretação; a decisão é *como* integrar, não *se* integrar.
-3. **IA end-to-end (da raw ao relatório)**: Rejeitado; inviabilizaria auditoria e reprodutibilidade da base analítica.
+1. **IA como fonte de métricas**: Inadequada ao objetivo de auditoria.
+2. **Sem IA no escopo**: Possível, mas o ADR registra que há valor em documentação assistida quando bem delimitada.
+3. **Pipeline totalmente generativo**: Rejeitada para o estudo por fragilidade de auditoria.

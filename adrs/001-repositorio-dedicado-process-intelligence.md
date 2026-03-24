@@ -1,29 +1,29 @@
 # ADR-001: Repositório dedicado para Process Intelligence
 
-**Status**: Aceito  
-**Data**: 2025-03  
-**Contexto**: Decisão sobre onde hospedar o desenvolvimento de Process Intelligence no ecossistema SIAN.
+**Status**: Provisório (estudo)  
+**Data**: 2025-03 · Atualizado: 2026-03  
+
+## Vigência
+
+Decisão de **organização de código e colaboração** no contexto de laboratório. Não define onde sistemas oficiais rodarão em produção; apenas que o trabalho de Process Intelligence neste ciclo se concentra neste repositório.
 
 ## Contexto
 
-A organização possui (ou planeja) repositórios como **Cortex** (orquestração) e **Argos** (observabilidade). Process Intelligence envolve: modelagem analítica de processos, event logs, mineração (PM4Py), simulação (SimPy) e integração de IA para interpretação e recomendações. É uma capability transversal que pode servir vários produtos e pipelines.
+No ecossistema SIAN podem existir iniciativas como **Cortex** (orquestração) e **Argos** (observabilidade). Process Intelligence envolve modelagem analítica, event logs, mineração, simulação e eventual uso de IA para interpretação — uma capability transversal. Durante o estudo, importa evitar misturar essas preocupações com orquestração ou observabilidade antes de haver contratos claros.
 
-Colocar todo o código e modelos dentro do Cortex ou do Argos traria acoplamento forte a preocupações específicas desses sistemas (orquestração e observabilidade) e dificultaria evolução independente, reuso por outros times e clareza de responsabilidades.
+## Decisão (direção de trabalho)
 
-## Decisão
+Manter um **repositório dedicado** (**sian-process-intelligence**) como lugar do estudo: dbt, código Python em `src/app/`, documentação, prompts e estes ADRs. Tratar o repo como **laboratório estruturado**, não como serviço implantado.
 
-Criar um **repositório dedicado** chamado **sian-process-intelligence** para toda a capability de Process Intelligence (dbt, Python mining/simulation/ai, documentação, prompts e ADRs). O repositório será tratado como um produto técnico reutilizável e, no início, como laboratório estruturado.
-
-Cortex e Argos **não** serão dependências diretas neste estágio; a integração futura será feita por contratos bem definidos (APIs, eventos ou artefatos compartilhados).
+Cortex e Argos **não** são dependências de build ou runtime nesta fase; integrações futuras seriam por contratos (APIs, eventos, artefatos), a definir quando o estudo amadurecer.
 
 ## Consequências
 
-- **Positivas**: Responsabilidade clara, evolução independente, reuso por outros projetos, ciclo de release desacoplado, ADRs e documentação focados em Process Intelligence.
-- **Negativas**: Mais um repositório para manter; necessidade de definir interfaces quando integrar com Cortex/Argos.
-- **Riscos**: Duplicação de convenções (lint, testes, CI) se não houver padrões organizacionais; mitigação: alinhar com práticas comuns e documentar neste repo.
+- **Esperadas**: Responsabilidade de pasta clara; evolução do estudo sem arrastar o Cortex; ADRs focados em PI.
+- **Cuidados**: Outro repositório organizacional pode acabar duplicando convenções (lint, CI) — alinhar quando houver decisão de produto.
 
-## Alternativas consideradas
+## Alternativas consideradas (para o estudo)
 
-1. **Tudo no Cortex**: Rejeitado por misturar orquestração com modelagem de processo e análise; Cortex não deve virar monolito de analytics.
-2. **Tudo no Argos**: Rejeitado; Argos foca em observabilidade, não em mineração e simulação de processos.
-3. **Múltiplos repos por subdomínio (um para dbt, um para Python)**: Rejeitado no início para evitar fragmentação excessiva; um repo com estrutura clara (dbt/, python/, docs/) atende melhor a fase de laboratório.
+1. **Tudo no Cortex**: Descartada no laboratório para não misturar orquestração com modelagem.
+2. **Tudo no Argos**: Descartada; foco de Argos não é mining/simulação.
+3. **Vários repositórios (dbt separado de Python)**: Descartada no início para reduzir fragmentação; monorepo com `dbt/`, `src/app/`, `docs/` atende o estudo.

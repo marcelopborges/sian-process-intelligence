@@ -14,11 +14,15 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+_scripts = Path(__file__).resolve().parent
+if str(_scripts) not in sys.path:
+    sys.path.insert(0, str(_scripts))
 
-from python.local_lab import config
+from _bootstrap import ensure_src_on_path  # noqa: E402
+
+ensure_src_on_path()
+
+from app.lab import config  # noqa: E402
 
 
 def main() -> None:
@@ -46,7 +50,7 @@ def main() -> None:
     print("=== Validações cp_event_log_semantic ===\n")
 
     if not table_exists:
-        print("AVISO: Tabela cp_event_log_semantic não existe. Rode antes: python -m python.local_lab.materialize_cp_event_log_semantic")
+        print("AVISO: Tabela cp_event_log_semantic não existe. Rode antes: python -m app.lab.materialize_cp_event_log_semantic")
         conn.close()
         sys.exit(1)
 

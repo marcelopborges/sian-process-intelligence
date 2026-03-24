@@ -91,4 +91,4 @@ Comparação entre as colunas/tipos/amostras dos arquivos Parquet em `data/extra
 
 ---
 
-*Relatório gerado por `scripts/report_parquet_schema_vs_sql.py`. Execute após extrair Parquets com `python -m python.local_lab.extract_bigquery_to_parquet`.*
+*Relatório gerado por `scripts/report_parquet_schema_vs_sql.py`. Execute após extrair Parquets com `python -m app.lab.extract_bigquery_to_parquet`.*

@@ -7,11 +7,15 @@ import sys
 from pathlib import Path
 from typing import Any
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+_scripts = Path(__file__).resolve().parent
+if str(_scripts) not in sys.path:
+    sys.path.insert(0, str(_scripts))
 
-from python.local_lab import config as local_lab_config
+from _bootstrap import ensure_src_on_path  # noqa: E402
+
+ensure_src_on_path()
+
+from app.lab import config as local_lab_config  # noqa: E402
 
 
 def _duckdb_tables(conn) -> list[tuple[str, list[str]]]:
@@ -52,7 +56,7 @@ def main() -> None:
         "-o",
         "--output-dir",
         type=Path,
-        default=Path("output") / "sx3_semantic",
+        default=Path("data/outputs/sx3_semantic"),
         help="Diretório de saída para JSON/Markdown.",
     )
     parser.add_argument("--min-confidence", type=float, default=0.6)
@@ -68,8 +72,8 @@ def main() -> None:
     except ImportError as e:
         raise SystemExit("duckdb não instalado. Instale com: pip install duckdb") from e
 
-    from python.sx3.sx3_loader import build_sx3_metadata, load_sx3_csv
-    from python.sx3.relationship_inferer import infer_relationship_suggestions
+    from app.discovery.relationship_inferer import infer_relationship_suggestions
+    from app.discovery.sx3_loader import build_sx3_metadata, load_sx3_csv
 
     out_dir: Path = args.output_dir
     out_dir.mkdir(parents=True, exist_ok=True)

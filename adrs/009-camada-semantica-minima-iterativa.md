@@ -1,30 +1,32 @@
-# ADR-009: Abordagem iterativa de camada semântica mínima
+# ADR-009: Camada semântica mínima e iterativa (laboratório)
 
-**Status**: Aceito  
-**Data**: 2025-03  
-**Contexto**: Nível de definição de camada semântica (nomes de negócio, métricas, hierarquias) no início do projeto.
+**Status**: Provisório (estudo)  
+**Data**: 2025-03 · Atualizado: 2026-03  
+
+## Vigência
+
+Define **quanto de “semântica de negócio”** formalizar antes de ter produto fechado. Adequado à fase de estudo: evitar paralisia por catálogo completo, sem abdicar de nomes estáveis onde o mining e a IA precisam.
 
 ## Contexto
 
-Uma camada semântica completa (catálogo de métricas, mapeamento de nomes de negócio para tabelas/colunas, regras de agregação) facilita autoatendimento e ferramentas de BI, mas exige acordo com várias áreas e pode atrasar a entrega de valor. O projeto começa como laboratório e precisa entregar resultados de Process Intelligence (mining, simulação) sem bloquear em definições semânticas amplas.
+Uma camada semântica rica (métricas certificadas, hierarquias, ferramentas de BI) exige consenso institucional que o laboratório ainda pode não ter. Ao mesmo tempo, atividades e chaves precisam de convenções mínimas para experimentos reprodutíveis.
 
-## Decisão
+## Decisão (direção de trabalho)
 
-Adotar uma **camada semântica mínima e iterativa**:
+Adotar **semântica mínima e incremental**:
 
-- **Mínima**: Definir apenas o necessário para o primeiro processo (Contas a Pagar): nomes de atividades no event log, case_id e atributos de caso essenciais (ex.: filial, fornecedor, valor), e métricas básicas (tempo de ciclo, quantidade de casos, variantes). Documentar no glossário (`docs/glossary.md`) e nos modelos dbt (comentários, descrições).
-- **Iterativa**: Expandir conforme necessidade: novas métricas, novos processos, mapeamentos para ferramentas de BI ou para a camada de IA. Não construir um catálogo semântico grande antecipadamente; cada adição deve ter uso concreto (relatório, análise, recomendação).
+- **Mínima**: o necessário para o recorte em estudo (ex.: nomes de atividades, `case_id`, atributos essenciais, convenções no dbt e no glossário).
+- **Iterativa**: ampliar quando um uso concreto aparecer (novo relatório, novo processo, integração com BI).
 
-Ferramentas de camada semântica (ex.: Cube, LookML, Metabase semantic layer) podem ser avaliadas depois; no início, a "semântica" vive em documentação e em convenções de nomenclatura no dbt e no código Python.
+Ferramentas dedicadas de semantic layer podem ser avaliadas **depois**; no estudo, a semântica vive em documentação, comentários de modelo e código em `src/app/`.
 
 ## Consequências
 
-- **Positivas**: Entrega mais rápida; menos dependência de acordos amplos; evolução guiada por uso real.
-- **Negativas**: Possível retrabalho de nomenclatura se houver mudança de convenção; BI/IA podem precisar de mapeamentos adicionais depois.
-- **Riscos**: Proliferação de sinônimos ou interpretações diferentes; mitigação: glossário central e revisão em PRs quando novos termos forem introduzidos.
+- **Esperadas**: Menos bloqueio para experimentar; evolução guiada por necessidade.
+- **Cuidados**: Possível retrabalho de nomenclatura — mitigar com glossário e revisão em mudanças relevantes.
 
 ## Alternativas consideradas
 
-1. **Camada semântica completa desde o início**: Rejeitado; atrasaria o laboratório e exigiria alinhamento que ainda não existe.
-2. **Sem camada semântica (apenas técnico)**: Rejeitado; mesmo mínimo, nomes de atividades e métricas precisam ser estáveis e documentados para mining e IA.
-3. **Adotar ferramenta de semantic layer já**: Rejeitado para a fase inicial; dbt + glossário + convenções são suficientes até haver demanda clara por catálogo rico.
+1. **Catálogo semântico completo no início**: Descartado no estudo por custo de alinhamento.
+2. **Apenas nomes técnicos**: Insuficiente para comunicação com negócio e para IA.
+3. **Adotar já uma ferramenta de semantic layer**: Adiada até haver demanda clara.

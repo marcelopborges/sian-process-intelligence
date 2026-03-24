@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from python.validation.process_flow import (
+from app.presentation.generate_mermaid import emoji_for_alignment
+from app.process.build_flow import build_process_flow
+from app.process.ordering import (
     build_edges,
-    build_process_flow,
-    emoji_for_alignment,
     recover_invalid_event,
     sort_events_for_flow,
 )

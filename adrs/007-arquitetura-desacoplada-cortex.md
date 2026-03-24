@@ -1,31 +1,31 @@
-# ADR-007: Arquitetura desacoplada, pronta para futura integração com Cortex
+# ADR-007: Arquitetura desacoplada para eventual integração com Cortex / Argos
 
-**Status**: Aceito  
-**Data**: 2025-03  
-**Contexto**: Relação deste repositório com o Cortex (e com Argos) e como evitar acoplamento prematuro.
+**Status**: Provisório (estudo)  
+**Data**: 2025-03 · Atualizado: 2026-03  
+
+## Vigência
+
+**Diretriz de desenho** para o repositório enquanto o Cortex (orquestração) e o Argos (observabilidade) evoluem ou não existem no mesmo estágio. Não define SLA nem integração obrigatória.
 
 ## Contexto
 
-O **Cortex** é (ou será) o sistema de orquestração de pipelines e serviços no ecossistema SIAN. O **sian-process-intelligence** implementa uma capability (Process Intelligence) que no futuro pode ser invocada pelo Cortex (ex.: rodar mining sob demanda, expor métricas, disparar simulações). Integrar desde o início criaria dependência de um sistema que pode ainda estar em evolução e aumentaria a complexidade do laboratório.
+No futuro, Process Intelligence pode ser orquestrada por outro sistema ou consumida por observabilidade. Acoplar o laboratório a SDKs ou APIs desses sistemas antes de contratos estáveis aumentaria retrabalho.
 
-## Decisão
+## Decisão (direção de trabalho)
 
-Manter **arquitetura desacoplada**: este repositório não depende do Cortex nem do Argos em tempo de build ou execução. Contratos e interfaces serão desenhados de forma que:
+Manter o núcleo do estudo **sem dependência de Cortex ou Argos** em build ou execução diária do repositório:
 
-- **Entradas**: o projeto assume que dados estão no BigQuery e que event logs/case bases são produzidos pelo dbt; não há chamadas HTTP ou SDK ao Cortex para obter dados.
-- **Saídas**: resultados (tabelas, arquivos, métricas) ficam em BigQuery ou em artefatos definidos (ex.: diretório de output); o Cortex pode, no futuro, orquestrar jobs que rodam dbt e Python e consumir esses artefatos.
-- **Configuração**: uso de variáveis de ambiente e arquivos de config (ex.: `.env`, `config/`) para credenciais e endpoints; quando houver integração, um adapter em `python/connectors/` ou em um serviço separado poderá chamar Cortex/Argos sem que o núcleo do Process Intelligence dependa deles.
-
-A documentação (README, docs/architecture.md) deve explicitar essa decisão e descrever o ponto de extensão para integração futura (APIs, eventos, convenções de artefatos).
+- **Entradas**: dados e modelos (ex.: BigQuery, dbt) via convenções do próprio repo; não via chamadas obrigatórias ao Cortex.
+- **Saídas**: tabelas, arquivos em `data/outputs/`, etc.; integrações futuras consumiriam esses artefatos ou contratos a definir.
+- **Extensão**: quando necessário, adapters em **`src/app/connectors/`** (ou serviços externos) podem encapsular chamadas a outros sistemas sem acoplar o núcleo analítico.
 
 ## Consequências
 
-- **Positivas**: Desenvolvimento e testes independentes; menor risco de bloqueio por mudanças no Cortex; integração pode ser feita quando os contratos estiverem estáveis.
-- **Negativas**: Duplicação possível de conceitos (ex.: agendamento) até a integração; necessidade de documentar o "contrato" futuro.
-- **Riscos**: Divergência de convenções (nomenclatura, formato de dados) entre este repo e o Cortex; mitigação: definir e documentar contratos de interface antes da implementação da integração.
+- **Esperadas**: Repo testável e evoluível independentemente do roadmap do Cortex.
+- **Cuidados**: Quando existir integração real, será preciso documentar contratos para evitar divergência de formatos.
 
 ## Alternativas consideradas
 
-1. **Integrar ao Cortex desde o início**: Rejeitado; Cortex pode não estar pronto; escopo do laboratório é validar Process Intelligence, não orquestração.
-2. **Não planejar integração**: Rejeitado; deixar claro o ponto de extensão reduz retrabalho quando a organização decidir integrar.
-3. **Criar um "mini-orquestrador" neste repo**: Rejeitado para a fase inicial; Makefile e scripts são suficientes; orquestração completa fica com o Cortex.
+1. **Dependência do Cortex desde o primeiro dia**: Evitada no estudo.
+2. **Ignorar integração futura**: Menos documentação de pontos de extensão; o ADR prefere deixar o gancho explícito.
+3. **Mini-orquestrador neste repo**: Makefile e scripts bastam para o laboratório; orquestração corporativa é outro tema.

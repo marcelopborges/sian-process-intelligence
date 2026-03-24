@@ -1,40 +1,38 @@
-# ADR-003: Event log universal como modelo central
+# ADR-003: Event log universal como modelo central (alvo de modelagem)
 
-**Status**: Aceito  
-**Data**: 2025-03  
-**Contexto**: Necessidade de um modelo de dados comum para Process Mining e simulação.
+**Status**: Provisório (estudo)  
+**Data**: 2025-03 · Atualizado: 2026-03  
+
+## Vigência
+
+Define um **alvo de desenho** para o mart de eventos durante o estudo. Colunas e regras podem mudar conforme validação com dados reais e negócio; nada aqui é especificação fechada de produção.
 
 ## Contexto
 
-Process Mining e ferramentas de simulação esperam dados em formato de **event log**: sequência de eventos por caso, com pelo menos caso (case_id), atividade (activity) e timestamp. Atributos adicionais (recurso, custo, atributos de caso) enriquecem análises. Cada processo de negócio (contas a pagar, compras, RH) tem tabelas fonte diferentes, mas a saída analítica deve seguir um mesmo padrão para permitir algoritmos e pipelines reutilizáveis.
+Process Mining e simulação assumem um **event log**: eventos por caso com atividade e tempo. Diferentes processos têm tabelas fonte distintas; o estudo beneficia-se de um **padrão de saída** para reutilizar código Python (`src/app/mining`, `src/app/simulation`) e comparar processos.
 
-## Decisão
+## Decisão (direção de trabalho)
 
-Adotar um **modelo de event log universal** como artefato central produzido pelo dbt e consumido pelo Python:
+Trabalhar em direção a um **modelo de event log comum** produzido pelo dbt e consumido pelo código em `src/app/`:
 
-- **Campos obrigatórios**: `case_id`, `activity` (nome da atividade), `timestamp` (timestamp do evento).
-- **Campos recomendados**: `activity_instance_id` (opcional, para eventos duplicados no mesmo caso/atividade), atributos de caso (ex.: filial, fornecedor, valor), atributos de evento (ex.: recurso, duração).
-- **Convenção**: Um mart `event_log` por processo (ex.: `mart_cp_event_log` para contas a pagar), com mesma estrutura de colunas; nomenclatura de atividades padronizada e documentada no glossário.
+- **Mínimo conceitual**: `case_id`, `activity`, timestamp efetivo para ordenação (no estudo de CP: convenções como `event_timestamp_adjusted` documentadas no domínio).
+- **Recomendado**: atributos de caso e de evento conforme necessidade de análise; nomenclatura de atividades alinhada ao glossário em evolução.
 
-Esse event log é a **fonte de verdade** para mineração (PM4Py) e para construção de modelos de simulação (SimPy); a IA interpreta resultados gerados a partir dele, não inventa dados.
+O event log é a **base** para experimentos de mining e simulação; a IA, quando usada, interpreta resultados derivados, não substitui o mart.
 
 ## Consequências
 
-- **Positivas**: Algoritmos de mining e simulação reutilizáveis; onboarding de novos processos simplificado; interoperabilidade com padrões (XES, CSV) via mapeamento.
-- **Negativas**: Exige disciplina na nomenclatura de atividades e no preenchimento de timestamps; modelos dbt devem garantir consistência.
-- **Riscos**: Timestamps ausentes ou incoerentes prejudicam mining; mitigação: testes dbt e validações em Python.
+- **Esperadas**: Código de mineração menos acoplado a um único SQL de origem.
+- **Cuidados**: Qualidade de timestamp e de nomes de atividade continua sendo risco — mitigação no estudo: testes dbt e validações em Python.
 
 ## Alternativas consideradas
 
-1. **Um formato por processo**: Rejeitado; aumentaria duplicação de código em Python e manutenção.
-2. **Apenas XES nativo**: Rejeitado; BigQuery e dbt trabalham melhor com tabelas relacionais; export para XES quando necessário pode ser feito em Python.
-3. **Event log apenas em Python (sem mart dbt)**: Rejeitado; ter o event log como mart no BigQuery permite auditoria, reprodutibilidade e uso por outras ferramentas (ex.: BI).
+1. **Formato totalmente diferente por processo**: Mais código duplicado no estudo.
+2. **Só XES**: Menos natural para BigQuery/dbt; export XES pode ser etapa posterior em Python.
+3. **Event log só em memória/script**: Perde rastreabilidade no warehouse durante o estudo.
 
 ---
 
-## Decisões subsequentes (Contas a Pagar)
+## Nota sobre Contas a Pagar (estudo)
 
-- **Colunas obrigatórias** no mart_cp_event_log: além de case_id e activity, passam a incluir `event_timestamp_original`, `event_order`, `event_timestamp_adjusted`, `timestamp_confiabilidade` (NEGOCIO/TECNICO). Ordenação estável para mining via event_timestamp_adjusted.
-- **Atividades padronizadas**: TITULO_CRIADO, TITULO_LIBERADO, EVENTO_FINANCEIRO_GERADO, LANCAMENTO_CONTABIL, PAGAMENTO_REALIZADO, BAIXA_SEM_SE5, TITULO_CANCELADO. BAIXA_MANUAL renomeado para BAIXA_SEM_SE5.
-- **FK2**: no log principal, um evento LANCAMENTO_CONTABIL por caso (agregado). Valor no evento agregado tratado com cautela (preferir NULL na V1).
-- Detalhes em docs/domain-contas-a-pagar.md e docs/architecture.md.
+Detalhes de colunas (timestamps original/ajustado, confiabilidade, ordem de eventos) são **hipóteses de modelagem** documentadas em `docs/` e no projeto dbt; devem ser tratados como evolutivos até validação formal.

@@ -20,27 +20,27 @@ fi
 echo "=== Laboratório local Process Intelligence ==="
 echo ""
 
-echo "[1/4] Extração BigQuery -> Parquet"
-uv run python -m python.local_lab.extract_bigquery_to_parquet || {
+echo "[1/5] Extração BigQuery -> Parquet"
+uv run python -m app.lab.extract_bigquery_to_parquet || {
   echo "AVISO: Extração falhou (credenciais BQ?). Crie data/extracts/*.parquet manualmente para continuar."
   exit 1
 }
 
 echo ""
-echo "[2/4] Carga Parquet -> DuckDB"
-uv run python -m python.local_lab.load_parquet_to_duckdb
+echo "[2/5] Carga Parquet -> DuckDB"
+uv run python -m app.lab.load_parquet_to_duckdb
 
 echo ""
-echo "[3/4] Materialização cp_case_base"
-uv run python -m python.local_lab.materialize_cp_case_base
+echo "[3/5] Materialização cp_case_base"
+uv run python -m app.lab.materialize_cp_case_base
 
 echo ""
 echo "[4/5] Materialização cp_event_log"
-uv run python -m python.local_lab.materialize_cp_event_log
+uv run python -m app.lab.materialize_cp_event_log
 
 echo ""
 echo "[5/5] Materialização cp_event_log_semantic"
-uv run python -m python.local_lab.materialize_cp_event_log_semantic
+uv run python -m app.lab.materialize_cp_event_log_semantic
 
 echo ""
 echo "=== Concluído. DuckDB: local/process_intelligence.duckdb | Parquets: data/marts/ ==="

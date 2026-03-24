@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from python.sx3.sx3_loader import build_sx3_metadata
+from app.discovery.sx3_loader import build_sx3_metadata
 
 
 def test_sx3_loader_builds_meta_for_known_table_and_field():

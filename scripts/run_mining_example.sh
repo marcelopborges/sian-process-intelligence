@@ -16,5 +16,5 @@ if [ -f .env ]; then
 fi
 
 # TODO: chamar Python para ler event log e rodar discovery/variants/bottlenecks
-# python -m python.mining.discovery ...
-echo "Mining pipeline a implementar. Veja python/mining/ e docs/roadmap.md."
+# python -m app.mining.discovery ...
+echo "Mining pipeline a implementar. Veja src/app/mining/ e docs/roadmap.md."
